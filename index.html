@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coliseum Duel</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Three.js from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.min.js"></script>
+    <!-- OrbitControls for development -->
+    <script>
+        // Add dummy object to avoid errors for THREE namespace in case the proper OrbitControls isn't loaded
+        THREE.OrbitControls = function() {
+            console.warn('OrbitControls fallback used');
+            this.enabled = false;
+            this.update = function() {};
+        };
+    </script>
+    <!-- We load OrbitControls from unpkg which works better with ES modules -->
+    <script src="https://unpkg.com/three@0.159.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+    <div id="game-container">
+        <!-- Game canvas will be inserted here -->
+        <div id="canvas-container"></div>
+        
+        <!-- Game UI -->
+        <div id="ui-container">
+            <!-- Start Screen -->
+            <div id="start-screen" class="game-screen">
+                <h1>Coliseum Duel</h1>
+                <button id="start-button">Start Battle</button>
+                <div class="controls-info">
+                    <h2>Controls:</h2>
+                    <p><strong>Movement:</strong> W, A, S, D</p>
+                    <p><strong>Attacks:</strong> Arrow Keys</p>
+                    <p><strong>Blocking:</strong> Shift + Arrow Keys</p>
+                </div>
+            </div>
+            
+            <!-- Game Screen (HUD) -->
+            <div id="game-screen" class="game-screen hidden">
+                <div id="health-bars">
+                    <div class="health-container">
+                        <div class="health-label">Player</div>
+                        <div class="health-bar-container">
+                            <div id="player-health-bar" class="health-bar"></div>
+                        </div>
+                        <div id="player-health-text">100/100</div>
+                    </div>
+                    
+                    <div class="health-container">
+                        <div class="health-label">Enemy</div>
+                        <div class="health-bar-container">
+                            <div id="enemy-health-bar" class="health-bar"></div>
+                        </div>
+                        <div id="enemy-health-text">100/100</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- End Screen -->
+            <div id="end-screen" class="game-screen hidden">
+                <h1 id="result-text">Victory!</h1>
+                <button id="restart-button">Play Again</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game scripts -->
+    <script src="js/input.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/enemy.js"></script>
+    <script src="js/arena.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html> 

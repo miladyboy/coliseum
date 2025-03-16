@@ -1,0 +1,167 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, html {
+    font-family: 'Arial', sans-serif;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #2c3e50;
+    color: #ecf0f1;
+}
+
+#game-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+#canvas-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+#ui-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none; /* Allow clicking through to the canvas */
+}
+
+.game-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.5s ease;
+}
+
+/* Add background only to start and end screens, not game screen */
+#start-screen, #end-screen {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.hidden {
+    display: none !important;
+    opacity: 0;
+}
+
+/* Start Screen Styles */
+#start-screen h1, #end-screen h1 {
+    font-size: 5rem;
+    color: #f1c40f;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    margin-bottom: 2rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+#start-button, #restart-button {
+    font-size: 1.5rem;
+    padding: 1rem 2rem;
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    pointer-events: auto; /* Make buttons clickable */
+    margin-bottom: 2rem;
+}
+
+#start-button:hover, #restart-button:hover {
+    background-color: #c0392b;
+    transform: scale(1.1);
+}
+
+.controls-info {
+    text-align: center;
+    background-color: rgba(52, 73, 94, 0.8);
+    padding: 2rem;
+    border-radius: 10px;
+    max-width: 500px;
+}
+
+.controls-info h2 {
+    margin-bottom: 1rem;
+    color: #f1c40f;
+}
+
+.controls-info p {
+    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+}
+
+/* Game Screen (HUD) Styles */
+#health-bars {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    padding-bottom: 0.5rem;
+}
+
+.health-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.health-label {
+    width: 5rem;
+    text-align: right;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.health-bar-container {
+    height: 20px;
+    flex-grow: 1;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
+    overflow: hidden;
+    max-width: 500px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.health-bar {
+    height: 100%;
+    width: 100%;
+    background-color: #2ecc71;
+    transition: width 0.3s ease;
+}
+
+#enemy-health-bar {
+    background-color: #e74c3c;
+}
+
+#player-health-text, #enemy-health-text {
+    width: 4rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+} 
