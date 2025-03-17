@@ -35,6 +35,7 @@
                     <p><strong>Movement:</strong> W, A, S, D</p>
                     <p><strong>Attacks:</strong> Arrow Keys</p>
                     <p><strong>Blocking:</strong> Shift + Arrow Keys</p>
+                    <p><strong>Pause:</strong> P or ESC</p>
                 </div>
             </div>
             
@@ -56,6 +57,19 @@
                         </div>
                         <div id="enemy-health-text">100/100</div>
                     </div>
+                </div>
+                
+                <!-- Pause Button -->
+                <button id="pause-button" class="game-button">II</button>
+            </div>
+            
+            <!-- Pause Screen -->
+            <div id="pause-screen" class="game-screen hidden">
+                <div class="pause-container">
+                    <h1>Paused</h1>
+                    <button id="resume-button" class="menu-button">Resume</button>
+                    <button id="restart-from-pause-button" class="menu-button">Restart</button>
+                    <button id="quit-button" class="menu-button">Quit to Menu</button>
                 </div>
             </div>
             

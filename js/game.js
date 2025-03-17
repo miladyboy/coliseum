@@ -6,6 +6,7 @@ class GameManager {
     constructor() {
         // Game state
         this.isRunning = false;
+        this.isPaused = false;
         this.lastTime = 0;
         
         // Initialize Three.js environment
@@ -85,6 +86,7 @@ class GameManager {
         
         // Set game state
         this.isRunning = true;
+        this.isPaused = false;
         this.lastTime = performance.now();
         
         // Disable dev controls during gameplay
@@ -93,13 +95,53 @@ class GameManager {
         }
     }
     
+    pauseGame() {
+        if (this.isRunning && !this.isPaused) {
+            this.isPaused = true;
+            // Optional: add any pause effects or sounds here
+        }
+    }
+    
+    resumeGame() {
+        if (this.isRunning && this.isPaused) {
+            this.isPaused = false;
+            this.lastTime = performance.now(); // Reset time to avoid large delta on resume
+            // Optional: add any resume effects or sounds here
+        }
+    }
+    
     restartGame() {
         // Reset player and enemy
-        this.player.reset();
-        this.enemy.reset();
+        if (this.player && this.enemy) {
+            this.player.reset();
+            this.enemy.reset();
+        } else {
+            // Create them if they don't exist
+            this.player = new Player(this.scene);
+            this.enemy = new Enemy(this.scene, this.player);
+        }
         
         // Reset game state
         this.isRunning = true;
+        this.isPaused = false;
+        this.lastTime = performance.now();
+    }
+    
+    resetGame() {
+        // Reset game state
+        this.isRunning = false;
+        this.isPaused = false;
+        
+        // Remove player and enemy from scene if they exist
+        if (this.player) {
+            this.scene.remove(this.player.mesh);
+            this.player = null;
+        }
+        
+        if (this.enemy) {
+            this.scene.remove(this.enemy.mesh);
+            this.enemy = null;
+        }
     }
     
     playerDied() {
@@ -124,8 +166,8 @@ class GameManager {
             this.devControls.update();
         }
         
-        // Only update game logic if the game is running
-        if (this.isRunning && this.player && this.enemy) {
+        // Only update game logic if the game is running and not paused
+        if (this.isRunning && !this.isPaused && this.player && this.enemy) {
             // Update player and enemy
             this.player.update(deltaTime);
             this.enemy.update(deltaTime);

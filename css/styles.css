@@ -51,8 +51,8 @@ body, html {
     transition: opacity 0.5s ease;
 }
 
-/* Add background only to start and end screens, not game screen */
-#start-screen, #end-screen {
+/* Add background only to start, pause and end screens, not game screen */
+#start-screen, #end-screen, #pause-screen {
     background-color: rgba(0, 0, 0, 0.7);
 }
 
@@ -62,7 +62,7 @@ body, html {
 }
 
 /* Start Screen Styles */
-#start-screen h1, #end-screen h1 {
+#start-screen h1, #end-screen h1, #pause-screen h1 {
     font-size: 5rem;
     color: #f1c40f;
     text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
@@ -164,4 +164,84 @@ body, html {
 #player-health-text, #enemy-health-text {
     width: 4rem;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* Pause Button Styles */
+#pause-button {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    font-size: 1.2rem;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    pointer-events: auto; /* Make button clickable */
+}
+
+#pause-button:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+    transform: scale(1.1);
+}
+
+/* Pause Screen Styles */
+.pause-container {
+    background-color: rgba(52, 73, 94, 0.9);
+    padding: 3rem;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 400px;
+}
+
+.menu-button {
+    font-size: 1.2rem;
+    padding: 0.8rem 1.5rem;
+    margin: 0.5rem;
+    width: 200px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    pointer-events: auto; /* Make buttons clickable */
+}
+
+.menu-button:hover {
+    background-color: #2980b9;
+    transform: scale(1.05);
+}
+
+#resume-button {
+    background-color: #2ecc71;
+}
+
+#resume-button:hover {
+    background-color: #27ae60;
+}
+
+#restart-from-pause-button {
+    background-color: #f1c40f;
+}
+
+#restart-from-pause-button:hover {
+    background-color: #f39c12;
+}
+
+#quit-button {
+    background-color: #e74c3c;
+}
+
+#quit-button:hover {
+    background-color: #c0392b;
 } 

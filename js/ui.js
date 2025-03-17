@@ -6,6 +6,7 @@
 // Game screen elements
 const startScreen = document.getElementById('start-screen');
 const gameScreen = document.getElementById('game-screen');
+const pauseScreen = document.getElementById('pause-screen');
 const endScreen = document.getElementById('end-screen');
 const resultText = document.getElementById('result-text');
 
@@ -17,6 +18,10 @@ const enemyHealthText = document.getElementById('enemy-health-text');
 
 // Button elements
 const startButton = document.getElementById('start-button');
+const pauseButton = document.getElementById('pause-button');
+const resumeButton = document.getElementById('resume-button');
+const restartFromPauseButton = document.getElementById('restart-from-pause-button');
+const quitButton = document.getElementById('quit-button');
 const restartButton = document.getElementById('restart-button');
 
 /**
@@ -25,7 +30,19 @@ const restartButton = document.getElementById('restart-button');
 function initUI() {
     // Add event listeners for buttons
     startButton.addEventListener('click', startGame);
+    pauseButton.addEventListener('click', pauseGame);
+    resumeButton.addEventListener('click', resumeGame);
+    restartFromPauseButton.addEventListener('click', restartGame);
+    quitButton.addEventListener('click', quitToMenu);
     restartButton.addEventListener('click', restartGame);
+    
+    // Add keyboard listener for pause
+    document.addEventListener('keydown', (event) => {
+        if ((event.key === 'p' || event.key === 'P' || event.key === 'Escape') && 
+            gameManager.isRunning && !gameManager.isPaused) {
+            pauseGame();
+        }
+    });
     
     // Show start screen
     showStartScreen();
@@ -37,6 +54,7 @@ function initUI() {
 function showStartScreen() {
     startScreen.classList.remove('hidden');
     gameScreen.classList.add('hidden');
+    pauseScreen.classList.add('hidden');
     endScreen.classList.add('hidden');
 }
 
@@ -46,11 +64,26 @@ function showStartScreen() {
 function showGameScreen() {
     startScreen.classList.add('hidden');
     gameScreen.classList.remove('hidden');
+    pauseScreen.classList.add('hidden');
     endScreen.classList.add('hidden');
     
     // Reset health bars
     updatePlayerHealth(100, 100);
     updateEnemyHealth(100, 100);
+}
+
+/**
+ * Show the pause screen
+ */
+function showPauseScreen() {
+    pauseScreen.classList.remove('hidden');
+}
+
+/**
+ * Hide the pause screen
+ */
+function hidePauseScreen() {
+    pauseScreen.classList.add('hidden');
 }
 
 /**
@@ -60,6 +93,7 @@ function showGameScreen() {
 function showEndScreen(playerWon) {
     startScreen.classList.add('hidden');
     gameScreen.classList.add('hidden');
+    pauseScreen.classList.add('hidden');
     endScreen.classList.remove('hidden');
     
     // Update result text
@@ -111,10 +145,39 @@ function startGame() {
 }
 
 /**
+ * Pause the game
+ */
+function pauseGame() {
+    // Call the game manager to pause the game
+    gameManager.pauseGame();
+    showPauseScreen();
+}
+
+/**
+ * Resume the game
+ */
+function resumeGame() {
+    // Call the game manager to resume the game
+    gameManager.resumeGame();
+    hidePauseScreen();
+}
+
+/**
  * Restart the game
  */
 function restartGame() {
+    hidePauseScreen();
     showGameScreen();
     // Call the game manager to restart the game
     gameManager.restartGame();
+}
+
+/**
+ * Quit to main menu
+ */
+function quitToMenu() {
+    hidePauseScreen();
+    showStartScreen();
+    // Reset the game
+    gameManager.resetGame();
 } 
