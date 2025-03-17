@@ -20,6 +20,14 @@ class Player {
         this.blockType = null;
         this.attackCooldown = 0;
         this.blockCooldown = 0;
+        this.hasDealtDamage = false;
+        
+        // Animation states
+        this.isWalking = false;
+        this.animationMixer = null;
+        this.currentAnimationAction = null;
+        this.walkAnimationTime = 0;
+        this.idleAnimationTime = 0;
         
         // Create player mesh
         this.createPlayerMesh();
@@ -29,21 +37,141 @@ class Player {
     }
     
     createPlayerMesh() {
-        // Create a simple player body (blue box)
-        const geometry = new THREE.BoxGeometry(1, 2, 1);
-        const material = new THREE.MeshLambertMaterial({ color: 0x3498db });
-        this.mesh = new THREE.Mesh(geometry, material);
+        // Create a group for the entire player
+        this.playerGroup = new THREE.Group();
+        this.scene.add(this.playerGroup);
+        this.playerGroup.position.set(0, 0, 5);
         
-        // Position slightly above ground to prevent clipping
-        this.mesh.position.set(0, 1, 5);
+        // Create character parts with cartoony proportions
+        // Materials
+        const bodyMaterial = new THREE.MeshLambertMaterial({ color: 0x3498db }); // Blue
+        const headMaterial = new THREE.MeshLambertMaterial({ color: 0xecf0f1 }); // Light skin tone
+        const armMaterial = bodyMaterial;
+        const legMaterial = new THREE.MeshLambertMaterial({ color: 0x2c3e50 }); // Dark blue (pants)
         
-        // Add to scene
-        this.scene.add(this.mesh);
+        // Torso
+        const torsoGeometry = new THREE.BoxGeometry(1, 1.2, 0.6);
+        this.torso = new THREE.Mesh(torsoGeometry, bodyMaterial);
+        this.torso.position.y = 1.4;
+        this.playerGroup.add(this.torso);
+        
+        // Head
+        const headGeometry = new THREE.BoxGeometry(0.7, 0.7, 0.7);
+        this.head = new THREE.Mesh(headGeometry, headMaterial);
+        this.head.position.y = 0.7;
+        this.torso.add(this.head);
+        
+        // Arms
+        // Left arm
+        this.leftArm = new THREE.Group();
+        this.leftArm.position.set(-0.6, 0.2, 0);
+        this.torso.add(this.leftArm);
+        
+        const leftShoulderGeometry = new THREE.BoxGeometry(0.25, 0.25, 0.25);
+        this.leftShoulder = new THREE.Mesh(leftShoulderGeometry, armMaterial);
+        this.leftArm.add(this.leftShoulder);
+        
+        const leftArmUpperGeometry = new THREE.BoxGeometry(0.2, 0.6, 0.2);
+        this.leftArmUpper = new THREE.Mesh(leftArmUpperGeometry, armMaterial);
+        this.leftArmUpper.position.y = -0.3;
+        this.leftShoulder.add(this.leftArmUpper);
+        
+        const leftArmLowerGeometry = new THREE.BoxGeometry(0.18, 0.6, 0.18);
+        this.leftArmLower = new THREE.Mesh(leftArmLowerGeometry, armMaterial);
+        this.leftArmLower.position.y = -0.6;
+        this.leftArmUpper.add(this.leftArmLower);
+        
+        // Right arm (sword arm)
+        this.rightArm = new THREE.Group();
+        this.rightArm.position.set(0.6, 0.2, 0);
+        this.torso.add(this.rightArm);
+        
+        const rightShoulderGeometry = new THREE.BoxGeometry(0.25, 0.25, 0.25);
+        this.rightShoulder = new THREE.Mesh(rightShoulderGeometry, armMaterial);
+        this.rightArm.add(this.rightShoulder);
+        
+        const rightArmUpperGeometry = new THREE.BoxGeometry(0.2, 0.6, 0.2);
+        this.rightArmUpper = new THREE.Mesh(rightArmUpperGeometry, armMaterial);
+        this.rightArmUpper.position.y = -0.3;
+        this.rightShoulder.add(this.rightArmUpper);
+        
+        const rightArmLowerGeometry = new THREE.BoxGeometry(0.18, 0.6, 0.18);
+        this.rightArmLower = new THREE.Mesh(rightArmLowerGeometry, armMaterial);
+        this.rightArmLower.position.y = -0.6;
+        this.rightArmUpper.add(this.rightArmLower);
+        
+        // Legs
+        // Left leg
+        this.leftLeg = new THREE.Group();
+        this.leftLeg.position.set(-0.3, -0.6, 0);
+        this.torso.add(this.leftLeg);
+        
+        const leftThighGeometry = new THREE.BoxGeometry(0.25, 0.6, 0.25);
+        this.leftThigh = new THREE.Mesh(leftThighGeometry, legMaterial);
+        this.leftThigh.position.y = -0.3;
+        this.leftLeg.add(this.leftThigh);
+        
+        const leftCalfGeometry = new THREE.BoxGeometry(0.2, 0.6, 0.2);
+        this.leftCalf = new THREE.Mesh(leftCalfGeometry, legMaterial);
+        this.leftCalf.position.y = -0.6;
+        this.leftThigh.add(this.leftCalf);
+        
+        // Right leg
+        this.rightLeg = new THREE.Group();
+        this.rightLeg.position.set(0.3, -0.6, 0);
+        this.torso.add(this.rightLeg);
+        
+        const rightThighGeometry = new THREE.BoxGeometry(0.25, 0.6, 0.25);
+        this.rightThigh = new THREE.Mesh(rightThighGeometry, legMaterial);
+        this.rightThigh.position.y = -0.3;
+        this.rightLeg.add(this.rightThigh);
+        
+        const rightCalfGeometry = new THREE.BoxGeometry(0.2, 0.6, 0.2);
+        this.rightCalf = new THREE.Mesh(rightCalfGeometry, legMaterial);
+        this.rightCalf.position.y = -0.6;
+        this.rightThigh.add(this.rightCalf);
+        
+        // Set reference to main mesh for compatibility with existing code
+        this.mesh = this.playerGroup;
         
         // Create a camera target (for the follow camera)
         this.cameraTarget = new THREE.Object3D();
-        this.mesh.add(this.cameraTarget);
-        this.cameraTarget.position.set(0, 1, 0);
+        this.torso.add(this.cameraTarget);
+        this.cameraTarget.position.set(0, 0.5, 0);
+        
+        // Set default pose
+        this.setIdlePose();
+    }
+    
+    // Default standing pose
+    setIdlePose() {
+        // Reset all rotations first
+        this.rightArm.rotation.set(0, 0, 0);
+        this.rightShoulder.rotation.set(0, 0, 0);
+        this.rightArmUpper.rotation.set(0, 0, 0);
+        this.rightArmLower.rotation.set(0, 0, 0);
+        
+        this.leftArm.rotation.set(0, 0, 0);
+        this.leftShoulder.rotation.set(0, 0, 0);
+        this.leftArmUpper.rotation.set(0, 0, 0);
+        this.leftArmLower.rotation.set(0, 0, 0);
+        
+        this.leftLeg.rotation.set(0, 0, 0);
+        this.leftThigh.rotation.set(0, 0, 0);
+        this.leftCalf.rotation.set(0, 0, 0);
+        
+        this.rightLeg.rotation.set(0, 0, 0);
+        this.rightThigh.rotation.set(0, 0, 0);
+        this.rightCalf.rotation.set(0, 0, 0);
+        
+        // Slightly bend the arms for a natural pose
+        this.rightArm.rotation.z = -0.1;
+        this.rightArmUpper.rotation.x = 0.2;
+        this.rightArmLower.rotation.x = 0.3;
+        
+        this.leftArm.rotation.z = 0.1;
+        this.leftArmUpper.rotation.x = 0.2;
+        this.leftArmLower.rotation.x = 0.3;
     }
     
     createWeapon() {
@@ -98,6 +226,11 @@ class Player {
         
         // Handle blocking
         this.handleBlocking(deltaTime);
+        
+        // Update idle animation if not moving, attacking, or blocking
+        if (!this.isWalking && !this.isAttacking && !this.isBlocking) {
+            this.updateIdleAnimation(deltaTime);
+        }
         
         // Update cooldowns
         if (this.attackCooldown > 0) {
@@ -182,7 +315,41 @@ class Player {
                     this.mesh.rotation.y = Math.max(currentYRotation - rotationStep, targetRotation);
                 }
             }
+            
+            // Update walking animation
+            this.updateWalkingAnimation(deltaTime);
+            this.isWalking = true;
+        } else {
+            // Not moving, return to idle pose
+            if (this.isWalking) {
+                this.setIdlePose();
+                this.isWalking = false;
+            }
         }
+    }
+    
+    updateWalkingAnimation(deltaTime) {
+        // Update animation time
+        this.walkAnimationTime += deltaTime * 5; // Control animation speed
+        
+        // Calculate leg and arm swing based on sine wave
+        const legSwing = Math.sin(this.walkAnimationTime) * 0.4;
+        const armSwing = Math.sin(this.walkAnimationTime) * 0.2;
+        
+        // Animate legs (opposite phase)
+        this.leftThigh.rotation.x = legSwing;
+        this.rightThigh.rotation.x = -legSwing;
+        
+        // Add a slight bend to the knees when the leg is moving backward
+        this.leftCalf.rotation.x = Math.max(0, -legSwing * 0.7);
+        this.rightCalf.rotation.x = Math.max(0, legSwing * 0.7);
+        
+        // Animate arms (opposite to legs)
+        this.leftArmUpper.rotation.x = -armSwing + 0.2; // Keep a slight bend
+        this.rightArmUpper.rotation.x = armSwing + 0.2;
+        
+        // Add a slight torso bounce
+        this.torso.position.y = 1.4 + Math.abs(Math.sin(this.walkAnimationTime * 2)) * 0.05;
     }
     
     handleAttacks(deltaTime) {
@@ -211,6 +378,7 @@ class Player {
         this.attackType = type;
         this.attackProgress = 0;
         this.attackDuration = 0.4; // seconds
+        this.hasDealtDamage = false;
         
         // Reset weapon position before starting animation
         this.resetWeaponPosition();
@@ -219,21 +387,33 @@ class Player {
         switch (type) {
             case 'up':
                 // Starting position for downward slash
+                // Raise arm and weapon above head
+                this.rightArm.rotation.x = -0.8;
+                this.rightArmUpper.rotation.x = -0.5;
                 this.weaponGroup.rotation.x = Math.PI / 2;
                 this.weaponGroup.position.y = 1;
                 break;
             case 'down':
                 // Starting position for forward thrust
+                // Pull arm back for thrust
+                this.rightArm.rotation.x = 0.5;
+                this.rightArmUpper.rotation.x = 0.3;
                 this.weaponGroup.rotation.x = -Math.PI / 6;
                 this.weaponGroup.position.z = -0.5;
                 break;
             case 'left':
                 // Starting position for left-to-right slash
+                // Wind up from left side
+                this.rightArm.rotation.z = 0.5;
+                this.rightArmUpper.rotation.z = 0.3;
                 this.weaponGroup.rotation.z = -Math.PI / 2;
                 this.weaponGroup.position.x = -0.5;
                 break;
             case 'right':
                 // Starting position for right-to-left slash
+                // Wind up from right side
+                this.rightArm.rotation.z = -0.5;
+                this.rightArmUpper.rotation.z = -0.3;
                 this.weaponGroup.rotation.z = Math.PI / 2;
                 this.weaponGroup.position.x = 0.5;
                 break;
@@ -249,6 +429,7 @@ class Player {
             this.isAttacking = false;
             this.attackCooldown = 0.2; // Small cooldown between attacks
             this.resetWeaponPosition();
+            this.setIdlePose();
             return;
         }
         
@@ -256,24 +437,69 @@ class Player {
         switch (this.attackType) {
             case 'up':
                 // Downward slash animation
-                this.weaponGroup.rotation.x = Math.PI / 2 - this.attackProgress * Math.PI;
-                this.weaponGroup.position.y = 1 - this.attackProgress * 0.5;
+                if (this.attackProgress < 0.5) {
+                    // First half - swing down
+                    const progress = this.attackProgress * 2; // Scale to 0-1 range
+                    this.rightArm.rotation.x = -0.8 + progress * 1.6; // From -0.8 to 0.8
+                    this.rightArmUpper.rotation.x = -0.5 + progress * 1.0; // From -0.5 to 0.5
+                    this.weaponGroup.rotation.x = Math.PI / 2 - progress * Math.PI; // Full 180 degree swing
+                    this.weaponGroup.position.y = 1 - progress * 0.5;
+                } else {
+                    // Second half - return to neutral
+                    const progress = (this.attackProgress - 0.5) * 2; // Scale to 0-1 range
+                    this.rightArm.rotation.x = 0.8 - progress * 0.9; // Return to slight bend
+                    this.rightArmUpper.rotation.x = 0.5 - progress * 0.3; // Return to slight bend
+                    this.weaponGroup.rotation.x = -Math.PI / 2 + progress * (Math.PI / 2 + Math.PI / 4); // Return to angled forward
+                    this.weaponGroup.position.y = 0.5 - progress * 0.5;
+                }
                 break;
             case 'down':
                 // Forward thrust animation
-                this.weaponGroup.position.z = -0.5 - this.attackProgress * 1.5;
-                if (this.attackProgress > 0.5) {
-                    // Return thrust
-                    this.weaponGroup.position.z = -2 + (this.attackProgress - 0.5) * 3;
+                if (this.attackProgress < 0.5) {
+                    // First half - thrust forward
+                    const progress = this.attackProgress * 2;
+                    this.rightArm.rotation.x = 0.5 - progress * 0.7; // From pulled back to extended
+                    this.rightArmUpper.rotation.x = 0.3 - progress * 0.1; // Straighten slightly
+                    this.weaponGroup.position.z = -0.5 - progress * 1.5; // Extend forward
+                } else {
+                    // Second half - return to neutral
+                    const progress = (this.attackProgress - 0.5) * 2;
+                    this.rightArm.rotation.x = -0.2 + progress * 0.1; // Return to neutral
+                    this.rightArmUpper.rotation.x = 0.2; // Maintain slight bend
+                    this.weaponGroup.position.z = -2 + progress * 2; // Return to neutral
                 }
                 break;
             case 'left':
                 // Left-to-right slash animation
-                this.weaponGroup.rotation.z = -Math.PI / 2 + this.attackProgress * Math.PI;
+                if (this.attackProgress < 0.5) {
+                    // First half - swing from left to right
+                    const progress = this.attackProgress * 2;
+                    this.rightArm.rotation.z = 0.5 - progress * 1.0; // From left to right
+                    this.rightArmUpper.rotation.z = 0.3 - progress * 0.6; // Follow through
+                    this.weaponGroup.rotation.z = -Math.PI / 2 + progress * Math.PI; // Full 180 degree swing
+                } else {
+                    // Second half - return to neutral
+                    const progress = (this.attackProgress - 0.5) * 2;
+                    this.rightArm.rotation.z = -0.5 + progress * 0.4; // Return to neutral
+                    this.rightArmUpper.rotation.z = -0.3 + progress * 0.2; // Return to neutral
+                    this.weaponGroup.rotation.z = Math.PI / 2 - progress * (Math.PI / 2); // Return to neutral
+                }
                 break;
             case 'right':
                 // Right-to-left slash animation
-                this.weaponGroup.rotation.z = Math.PI / 2 - this.attackProgress * Math.PI;
+                if (this.attackProgress < 0.5) {
+                    // First half - swing from right to left
+                    const progress = this.attackProgress * 2;
+                    this.rightArm.rotation.z = -0.5 + progress * 1.0; // From right to left
+                    this.rightArmUpper.rotation.z = -0.3 + progress * 0.6; // Follow through
+                    this.weaponGroup.rotation.z = Math.PI / 2 - progress * Math.PI; // Full 180 degree swing
+                } else {
+                    // Second half - return to neutral
+                    const progress = (this.attackProgress - 0.5) * 2;
+                    this.rightArm.rotation.z = 0.5 - progress * 0.4; // Return to neutral
+                    this.rightArmUpper.rotation.z = 0.3 - progress * 0.2; // Return to neutral
+                    this.weaponGroup.rotation.z = -Math.PI / 2 + progress * (Math.PI / 2); // Return to neutral
+                }
                 break;
         }
     }
@@ -309,25 +535,37 @@ class Player {
             switch (type) {
                 case 'up':
                     // Block overhead attacks
+                    this.rightArm.rotation.x = -0.6;
+                    this.rightArmUpper.rotation.x = -0.4;
                     this.weaponGroup.rotation.x = 0;
                     this.weaponGroup.position.y = 1.2;
                     break;
                 case 'down':
                     // Block forward thrusts
+                    this.rightArm.rotation.x = 0.3;
+                    this.rightArmUpper.rotation.x = 0.5;
                     this.weaponGroup.rotation.x = Math.PI / 2;
                     this.weaponGroup.position.z = -0.5;
                     break;
                 case 'left':
                     // Block attacks from the left
+                    this.rightArm.rotation.z = 0.3;
+                    this.rightArmUpper.rotation.z = 0.2;
                     this.weaponGroup.rotation.z = -Math.PI / 4;
                     this.weaponGroup.position.x = -0.5;
                     break;
                 case 'right':
                     // Block attacks from the right
+                    this.rightArm.rotation.z = -0.3;
+                    this.rightArmUpper.rotation.z = -0.2;
                     this.weaponGroup.rotation.z = Math.PI / 4;
                     this.weaponGroup.position.x = 0.5;
                     break;
             }
+            
+            // Add a slight defensive stance
+            this.torso.rotation.x = 0.1; // Lean forward slightly
+            this.leftArm.rotation.x = 0.3; // Raise left arm for balance
         }
     }
     
@@ -336,6 +574,7 @@ class Player {
         this.blockType = null;
         this.blockCooldown = 0.1; // Small cooldown between blocks
         this.resetWeaponPosition();
+        this.setIdlePose(); // Return to idle pose
     }
     
     // Check if successfully blocking an attack
@@ -387,5 +626,24 @@ class Player {
         this.attackCooldown = 0;
         this.blockCooldown = 0;
         this.resetWeaponPosition();
+    }
+    
+    updateIdleAnimation(deltaTime) {
+        // Update idle animation time
+        this.idleAnimationTime += deltaTime;
+        
+        // Subtle breathing animation
+        const breathingOffset = Math.sin(this.idleAnimationTime * 1.5) * 0.03;
+        this.torso.position.y = 1.4 + breathingOffset;
+        
+        // Subtle arm movement
+        const armOffset = Math.sin(this.idleAnimationTime * 0.8) * 0.02;
+        this.rightArm.rotation.z = -0.1 + armOffset;
+        this.leftArm.rotation.z = 0.1 - armOffset;
+        
+        // Subtle head movement
+        const headOffset = Math.sin(this.idleAnimationTime * 0.5) * 0.02;
+        this.head.rotation.z = headOffset;
+        this.head.rotation.y = Math.sin(this.idleAnimationTime * 0.3) * 0.03;
     }
 } 
