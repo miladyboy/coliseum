@@ -1,0 +1,21 @@
+{
+  "name": "coliseum",
+  "version": "1.0.0",
+  "description": "A first-person sword-fighting game where you battle in a large, open coliseum arena against a bot in intense one-on-one combat.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "browser-sync start --server --files \"*.html, css/*.css, js/*.js, assets/**/*\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/miladyboy/coliseum.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/miladyboy/coliseum/issues"
+  },
+  "homepage": "https://github.com/miladyboy/coliseum#readme"
+}
