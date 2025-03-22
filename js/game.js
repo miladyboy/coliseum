@@ -4,10 +4,27 @@
  */
 class GameManager {
     constructor() {
+        // Store a reference to this instance for the animate method
+        this.animate = this.animate.bind(this);
+        
         // Game state
         this.isRunning = false;
         this.isPaused = false;
         this.lastTime = 0;
+        
+        // Game objects
+        this.scene = null;
+        this.camera = null;
+        this.renderer = null;
+        this.player = null;
+        this.enemy = null;
+        this.arena = null;
+        this.devControls = null;
+        
+        // Always use first-person view (no toggle)
+        
+        // Initialize input system
+        input.init();
         
         // Initialize Three.js environment
         this.initThree();
@@ -16,8 +33,7 @@ class GameManager {
         initUI();
         
         // Start animation loop
-        this.animate = this.animate.bind(this);
-        requestAnimationFrame(this.animate);
+        this.animate(performance.now());
     }
     
     initThree() {
@@ -88,6 +104,9 @@ class GameManager {
         this.isRunning = true;
         this.isPaused = false;
         this.lastTime = performance.now();
+        
+        // Set first-person mode for player
+        this.player.setFirstPersonMode(true);
         
         // Disable dev controls during gameplay
         if (this.devControls) {
@@ -184,28 +203,28 @@ class GameManager {
     }
     
     updateCamera() {
+        if (!this.player || !this.enemy) return;
+        
         // Get positions
         const playerPos = this.player.getPosition();
         const enemyPos = this.enemy.getPosition();
         
-        // Calculate camera position behind player
-        const cameraOffset = new THREE.Vector3();
+        // First-person camera positioning only - no third-person option
+        
+        // Get the world position of the player's head
+        const headWorldPos = new THREE.Vector3();
+        this.player.head.getWorldPosition(headWorldPos);
+        
+        // Set camera at eye level
+        this.camera.position.copy(headWorldPos);
         
         // Get direction from player to enemy
         const playerToEnemy = new THREE.Vector3();
         playerToEnemy.subVectors(enemyPos, playerPos).normalize();
         
-        // Set camera behind player (opposite direction to enemy)
-        cameraOffset.copy(playerToEnemy).negate().multiplyScalar(5);
-        
-        // Add height for better view
-        cameraOffset.y = 3;
-        
-        // Set camera position
-        this.camera.position.copy(playerPos).add(cameraOffset);
-        
-        // Look at the player's camera target (slightly above player)
-        this.camera.lookAt(this.player.cameraTarget.getWorldPosition(new THREE.Vector3()));
+        // Look in the direction the player is facing
+        const targetPos = new THREE.Vector3().copy(headWorldPos).add(playerToEnemy);
+        this.camera.lookAt(targetPos);
     }
     
     checkCombat() {

@@ -1,136 +1,106 @@
 /**
- * Input handler for the Coliseum Duel game
- * Manages keyboard inputs for movement, attacks, and blocking
+ * Input handler for Coliseum Duel
+ * Maps keyboard input to game actions for movement, attacks, and blocking
  */
-class InputHandler {
-    constructor() {
-        // Key states
-        this.keys = {
-            // Movement keys
-            w: false,
-            a: false, 
-            s: false,
-            d: false,
-            
-            // Attack keys
-            arrowup: false,
-            arrowdown: false,
-            arrowleft: false,
-            arrowright: false,
-            
-            // Modifier keys
-            shift: false
-        };
-        
-        // Bind event listeners
-        this.setupEventListeners();
-    }
+
+// Keyboard state tracking
+const keys = {};
+
+// Movement state
+const movementDirection = new THREE.Vector3();
+
+// Initialize input handlers
+function initInput() {
+    // Add event listeners for keyboard
+    window.addEventListener('keydown', (event) => {
+        keys[event.key] = true;
+    });
     
-    setupEventListeners() {
-        // Handle key down events
-        document.addEventListener('keydown', (event) => {
-            const key = event.key.toLowerCase();
-            
-            // Update key state if it's in our tracked keys
-            if (key in this.keys) {
-                this.keys[key] = true;
-                
-                // Prevent default browser behavior for game controls
-                event.preventDefault();
-            }
-        });
-        
-        // Handle key up events
-        document.addEventListener('keyup', (event) => {
-            const key = event.key.toLowerCase();
-            
-            // Update key state if it's in our tracked keys
-            if (key in this.keys) {
-                this.keys[key] = false;
-            }
-        });
-    }
-    
-    // Movement methods
-    isMovingForward() {
-        return this.keys.w;
-    }
-    
-    isMovingBackward() {
-        return this.keys.s;
-    }
-    
-    isMovingLeft() {
-        return this.keys.a;
-    }
-    
-    isMovingRight() {
-        return this.keys.d;
-    }
-    
-    // Attack methods
-    isAttackingUp() {
-        return this.keys.arrowup && !this.keys.shift;
-    }
-    
-    isAttackingDown() {
-        return this.keys.arrowdown && !this.keys.shift;
-    }
-    
-    isAttackingLeft() {
-        return this.keys.arrowleft && !this.keys.shift;
-    }
-    
-    isAttackingRight() {
-        return this.keys.arrowright && !this.keys.shift;
-    }
-    
-    // Blocking methods
-    isBlockingUp() {
-        return this.keys.arrowup && this.keys.shift;
-    }
-    
-    isBlockingDown() {
-        return this.keys.arrowdown && this.keys.shift;
-    }
-    
-    isBlockingLeft() {
-        return this.keys.arrowleft && this.keys.shift;
-    }
-    
-    isBlockingRight() {
-        return this.keys.arrowright && this.keys.shift;
-    }
-    
-    // Direction helpers
-    getMovementDirection() {
-        const direction = new THREE.Vector3(0, 0, 0);
-        
-        if (this.isMovingForward()) direction.z -= 1;
-        if (this.isMovingBackward()) direction.z += 1;
-        if (this.isMovingLeft()) direction.x -= 1;
-        if (this.isMovingRight()) direction.x += 1;
-        
-        // Normalize to ensure consistent speed in all directions
-        if (direction.length() > 0) {
-            direction.normalize();
-        }
-        
-        return direction;
-    }
-    
-    // Check if any attack key is pressed
-    isAttacking() {
-        return this.isAttackingUp() || this.isAttackingDown() || 
-               this.isAttackingLeft() || this.isAttackingRight();
-    }
-    
-    // Check if any block key is pressed
-    isBlocking() {
-        return this.isBlockingUp() || this.isBlockingDown() || 
-               this.isBlockingLeft() || this.isBlockingRight();
-    }
+    window.addEventListener('keyup', (event) => {
+        keys[event.key] = false;
+    });
 }
 
-// Create and export a single instance
-const input = new InputHandler(); 
+/**
+ * Get current movement direction from WASD keys
+ * @returns {THREE.Vector3} Normalized direction vector
+ */
+function getMovementDirection() {
+    // Reset direction
+    movementDirection.set(0, 0, 0);
+    
+    // Set direction based on WASD keys
+    if (keys['w'] || keys['W'] || keys['ArrowUp']) {
+        movementDirection.z = 1;
+    }
+    if (keys['s'] || keys['S'] || keys['ArrowDown']) {
+        movementDirection.z = -1;
+    }
+    if (keys['a'] || keys['A'] || keys['ArrowLeft']) {
+        movementDirection.x = 1;
+    }
+    if (keys['d'] || keys['D'] || keys['ArrowRight']) {
+        movementDirection.x = -1;
+    }
+    
+    return movementDirection;
+}
+
+/**
+ * Check if an attack key is pressed
+ * @returns {string|null} Attack type or null if no attack key is pressed
+ */
+function getAttackInput() {
+    // If shift is held, we're blocking not attacking
+    if (keys['Shift']) {
+        return null;
+    }
+    
+    // Check for attack inputs
+    if (keys['ArrowUp']) {
+        return 'vertical';      // Up arrow - vertical slash
+    }
+    if (keys['ArrowDown']) {
+        return 'thrust';        // Down arrow - forward thrust
+    }
+    if (keys['ArrowLeft'] || keys['ArrowRight']) {
+        return 'horizontal';    // Left/Right arrow - horizontal slash
+    }
+    
+    return null;
+}
+
+/**
+ * Check if a block key combination is pressed
+ * @returns {string|null} Block type or null if no block key combo is pressed
+ */
+function getBlockInput() {
+    // Blocking requires shift key
+    if (!keys['Shift']) {
+        return null;
+    }
+    
+    // Check for block direction
+    if (keys['ArrowUp']) {
+        return 'up';
+    }
+    if (keys['ArrowDown']) {
+        return 'down';
+    }
+    if (keys['ArrowLeft']) {
+        return 'left';
+    }
+    if (keys['ArrowRight']) {
+        return 'right';
+    }
+    
+    return null;
+}
+
+// Export input functions
+const input = {
+    init: initInput,
+    getMovementDirection,
+    getAttackInput,
+    getBlockInput
+}; 
